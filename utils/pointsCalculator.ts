@@ -52,7 +52,7 @@ export const checkBadgeEligibility = (state: any) => {
     eligibleBadges.push('persistent');
   }
 
-  // Logic for AI Enthusiast
+  // Logic for AI Enthusiast - awarded after 5 interactions
   if (state.aiInteractions >= 5) {
     eligibleBadges.push('ai-enthusiast');
   }

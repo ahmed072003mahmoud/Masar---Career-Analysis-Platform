@@ -50,12 +50,16 @@ export const useMarketData = () => {
       setIsCached(false);
     } catch (err: any) {
       console.error("Market Data Fetch Error:", err);
-      let errorMsg = 'تعذر جلب بيانات السوق الحالية حالياً.';
+      let errorMsg = 'عذراً، تعذر تحديث بيانات السوق حالياً. يرجى المحاولة لاحقاً.';
+      
       if (!navigator.onLine) {
-        errorMsg = 'يبدو أنك غير متصل بالإنترنت. يرجى التحقق من اتصالك.';
-      } else if (err.message?.includes('API_KEY')) {
-        errorMsg = 'هناك مشكلة في مفتاح الوصول للبيانات.';
+        errorMsg = 'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة وإعادة المحاولة.';
+      } else if (err.status === 429) {
+        errorMsg = 'تم تجاوز عدد الطلبات المسموح به. يرجى الانتظار قليلاً.';
+      } else if (err.status >= 500) {
+        errorMsg = 'هناك مشكلة في خوادمنا حالياً. فريقنا يعمل على حلها.';
       }
+
       setError(errorMsg);
     } finally {
       setLoading(false);

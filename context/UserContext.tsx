@@ -14,10 +14,16 @@ interface User {
   token: string;
 }
 
+type ThemeType = 'dark' | 'light' | 'glass' | 'bento';
+
 interface AppState {
   user: User | null;
+  theme: ThemeType;
   answers: Record<string, string>;
   profile: UserAssessment;
+  savedReport: any | null;
+  aiInsights: string | null;
+  aiSummary: string | null;
   badges: string[];
   points: number;
   events: TimelineEvent[];
@@ -32,8 +38,12 @@ interface AppState {
 type Action = 
   | { type: 'LOGIN'; user: User }
   | { type: 'LOGOUT' }
+  | { type: 'SET_THEME'; theme: ThemeType }
   | { type: 'SET_ANSWER'; questionId: string; value: string }
   | { type: 'UPDATE_PROFILE'; profile: Partial<UserAssessment> }
+  | { type: 'SAVE_REPORT'; report: any }
+  | { type: 'SET_AI_INSIGHTS'; insights: string }
+  | { type: 'SET_AI_SUMMARY'; summary: string }
   | { type: 'ADD_PROJECT'; project: any }
   | { type: 'REMOVE_PROJECT'; id: string }
   | { type: 'ADD_COURSE'; course: any }
@@ -51,6 +61,7 @@ type Action =
 
 const initialState: AppState = {
   user: null,
+  theme: 'dark',
   answers: {},
   profile: {
     fullName: 'زائر مسار',
@@ -64,8 +75,11 @@ const initialState: AppState = {
     projects: [],
     courses: []
   },
+  savedReport: null,
+  aiInsights: null,
+  aiSummary: null,
   badges: [],
-  points: 0, // Reset to 0 to start at Level 1
+  points: 0,
   events: [{
     id: 'init',
     type: 'level',
@@ -92,10 +106,18 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, user: action.user };
     case 'LOGOUT':
       return { ...state, user: null };
+    case 'SET_THEME':
+      return { ...state, theme: action.theme };
     case 'SET_ANSWER':
       return { ...state, answers: { ...state.answers, [action.questionId]: action.value } };
     case 'UPDATE_PROFILE':
       return { ...state, profile: { ...state.profile, ...action.profile } };
+    case 'SAVE_REPORT':
+      return { ...state, savedReport: action.report };
+    case 'SET_AI_INSIGHTS':
+      return { ...state, aiInsights: action.insights };
+    case 'SET_AI_SUMMARY':
+      return { ...state, aiSummary: action.summary };
     case 'ADD_PROJECT':
       return { ...state, profile: { ...state.profile, projects: [...state.profile.projects, action.project] } };
     case 'REMOVE_PROJECT':

@@ -4,28 +4,57 @@ import { useMarketData } from '../hooks/useMarketData';
 import { SkillsChart, SalariesChart, GrowthChart, GeoChart } from '../components/MarketCharts';
 import Button from '../components/ui/Button';
 import { useUser } from '../context/UserContext';
-import { RefreshCw, TrendingUp, HelpCircle, MapPin, DollarSign, Target, Database, Newspaper, ExternalLink, Sparkles, Info } from 'lucide-react';
+import { RefreshCw, TrendingUp, HelpCircle, MapPin, DollarSign, Target, Database, Newspaper, ExternalLink, Sparkles, Info, AlertCircle, Clock } from 'lucide-react';
 import { getLiveMarketNews } from '../services/geminiService';
 
-const ChartSkeleton = () => (
-  <div className="space-y-6 animate-pulse">
-    <div className="flex items-center gap-4">
-      <div className="w-10 h-10 bg-[#233554] rounded-lg"></div>
-      <div className="w-40 h-6 bg-[#233554] rounded"></div>
+const MarketTrendsSkeleton = () => (
+  <div className="container-custom py-12 animate-pulse">
+    {/* Header Skeleton */}
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 gap-8">
+      <div className="space-y-4 w-full md:w-1/3">
+        <div className="h-10 bg-white/5 rounded-2xl w-3/4"></div>
+        <div className="h-4 bg-white/5 rounded-full w-full"></div>
+      </div>
+      <div className="h-12 bg-white/5 rounded-2xl w-32"></div>
     </div>
-    <div className="h-[250px] w-full bg-[#0A192F] rounded-2xl border border-[#233554] relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#233554]/20 to-transparent skew-x-[-20deg] animate-[shimmer_2s_infinite]"></div>
-      <div className="flex items-end justify-around h-full p-4 gap-2">
-        {[40, 70, 50, 90, 60].map((h, i) => (
-          <div key={i} className="bg-[#233554] rounded-t-lg w-full" style={{ height: `${h}%` }}></div>
-        ))}
+
+    {/* Bento Grid Charts Skeletons */}
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+      <div className="md:col-span-8 bento-card p-10 h-[400px] flex flex-col gap-6">
+        <div className="flex justify-between items-center flex-row-reverse">
+          <div className="h-6 bg-white/5 rounded-lg w-32"></div>
+          <div className="h-4 bg-white/5 rounded-full w-4"></div>
+        </div>
+        <div className="flex-1 bg-white/5 rounded-3xl"></div>
+      </div>
+      <div className="md:col-span-4 bento-card p-10 h-[400px] flex flex-col items-center justify-center gap-6">
+        <div className="h-20 w-20 bg-white/5 rounded-3xl"></div>
+        <div className="h-6 bg-white/5 rounded-lg w-32"></div>
+        <div className="h-40 w-40 bg-white/5 rounded-full"></div>
       </div>
     </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+      <div className="md:col-span-4 bento-card p-10 h-[400px] flex flex-col gap-6">
+        <div className="h-6 bg-white/5 rounded-lg w-32 self-end"></div>
+        <div className="flex-1 bg-white/5 rounded-3xl"></div>
+      </div>
+      <div className="md:col-span-8 bento-card p-10 h-[400px] flex flex-col gap-6">
+        <div className="flex justify-between items-center flex-row-reverse">
+          <div className="h-6 bg-white/5 rounded-lg w-32"></div>
+          <div className="h-4 bg-white/5 rounded-full w-4"></div>
+        </div>
+        <div className="flex-1 bg-white/5 rounded-3xl"></div>
+      </div>
+    </div>
+
+    {/* News Section Skeleton */}
+    <div className="bento-card p-10 h-[300px] bg-white/5"></div>
   </div>
 );
 
 const MarketTrends: React.FC = () => {
-  const { data, loading, error, isCached, refresh } = useMarketData();
+  const { data, loading, error, refresh } = useMarketData();
   const { dispatch } = useUser();
   const [liveNews, setLiveNews] = useState<{text: string, sources: any[] | null}>( {text: '', sources: null});
   const [isNewsLoading, setIsNewsLoading] = useState(false);
@@ -33,8 +62,10 @@ const MarketTrends: React.FC = () => {
   useEffect(() => {
     dispatch({ type: 'INCREMENT_MARKET_VISITS' });
     dispatch({ type: 'ADD_POINTS', amount: 5 });
-    fetchNews('الذكاء الاصطناعي والتقنية');
-  }, [dispatch]);
+    if (!loading && data) {
+      fetchNews('الذكاء الاصطناعي والتقنية');
+    }
+  }, [dispatch, loading, !!data]);
 
   const fetchNews = async (sector: string) => {
     setIsNewsLoading(true);
@@ -48,15 +79,19 @@ const MarketTrends: React.FC = () => {
     }
   };
 
+  if (loading && !data) {
+    return <MarketTrendsSkeleton />;
+  }
+
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-20 text-center">
-        <div className="bg-[#112240] p-10 rounded-[3rem] border border-red-900/30 max-w-md mx-auto">
-          <div className="bg-red-500 text-[#0A192F] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-            <RefreshCw className="w-8 h-8" />
+      <div className="container-custom py-24 text-center">
+        <div className="max-w-md mx-auto bento-card p-12 border-red-500/20">
+          <div className="bg-red-500/10 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-8">
+            <AlertCircle size={40} className="text-red-500" />
           </div>
-          <p className="text-white font-bold mb-6 text-xl">{error}</p>
-          <Button variant="primary" className="bg-[#64FFDA] text-[#0A192F]" onClick={refresh}>إعادة المحاولة الآن</Button>
+          <h2 className="text-xl font-bold text-white mb-4">{error}</h2>
+          <Button onClick={refresh} leftIcon={<RefreshCw size={16} />}>إعادة المحاولة</Button>
         </div>
       </div>
     );
@@ -66,187 +101,128 @@ const MarketTrends: React.FC = () => {
 
   return (
     <div className="container-custom py-12">
-      <style>{`
-        @keyframes shimmer {
-          100% { transform: translateX(100%) skewX(-20deg); }
-        }
-      `}</style>
-
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2 text-white">تحليل السوق اللحظي</h1>
-          <div className="flex items-center gap-3">
-            <p className="text-slate-400 flex items-center gap-2">
-              بيانات دقيقة حول مهارات المستقبل وتوزيع الفرص الوظيفية
-            </p>
-            {isCached && (
-              <span className="flex items-center gap-1 text-[10px] bg-[#64FFDA]/10 text-[#64FFDA] px-2 py-0.5 rounded-full font-bold border border-[#64FFDA]/20 animate-in fade-in zoom-in">
-                <Database size={10} />
-                بيانات مؤرشفة
-              </span>
-            )}
-            <div className="group relative cursor-help">
-              <Info size={14} className="text-slate-500" />
-              <div className="absolute bottom-full mb-2 right-0 w-48 bg-[#112240] text-xs p-3 rounded-xl border border-[#233554] opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none text-white">
-                تعتمد هذه البيانات على محاكاة واقعية لمتطلبات سوق العمل الحالي وتوقعات النمو المستقبلي.
-              </div>
-            </div>
-          </div>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 gap-8">
+        <div className="text-right">
+          <h1 className="text-4xl font-black mb-2 text-white tracking-tighter">رادار سوق العمل</h1>
+          <p className="text-neutral-400 font-medium">تحليل إحصائي وتوقعات النمو للقطاعات الواعدة في 2025</p>
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col items-end gap-3">
           <Button 
-            variant="secondary" 
+            variant="outline" 
             onClick={refresh} 
             isLoading={loading}
-            className="bg-[#64FFDA] text-[#0A192F]"
             leftIcon={<RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />}
           >
             تحديث البيانات
           </Button>
           {data && (
-            <span className="text-xs text-slate-500 font-medium">آخر تحديث: {lastUpdated}</span>
+            <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-black uppercase tracking-widest">
+              <Clock size={12} />
+              آخر تحديث: {lastUpdated}
+            </div>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        <section className="bg-[#112240] p-6 md:p-8 rounded-3xl shadow-sm border border-[#233554]">
-          {loading && !data ? <ChartSkeleton /> : data && (
-            <>
-              <div className="flex items-center gap-2 mb-6">
-                <div className="bg-[#64FFDA]/10 p-2 rounded-lg text-[#64FFDA]">
-                  <Target size={20} />
-                </div>
-                <h3 className="text-xl font-bold text-white text-right">أكثر المهارات طلباً</h3>
-                <div className="group relative mr-auto">
-                  <HelpCircle size={16} className="text-slate-600 cursor-help" />
-                  <div className="absolute bottom-full mb-2 left-0 w-40 bg-[#0A192F] text-[10px] p-2 rounded-lg border border-[#233554] opacity-0 group-hover:opacity-100 transition-opacity z-10 text-white">
-                    يمثل هذا الرسم البياني نسبة تواجد المهارة في إعلانات الوظائف الحالية.
-                  </div>
-                </div>
+      {/* Bento Grid Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+        <div className="md:col-span-8 bento-card p-10">
+          <div className="flex items-center justify-between mb-10 flex-row-reverse">
+            <div className="flex items-center gap-3">
+              <div className="bg-[var(--accent)] bg-opacity-10 p-2 rounded-xl text-[var(--accent)]">
+                <Target size={20} />
               </div>
-              <SkillsChart data={data.skills} />
-            </>
-          )}
-        </section>
-
-        <section className="bg-[#112240] p-6 md:p-8 rounded-3xl shadow-sm border border-[#233554]">
-          {loading && !data ? <ChartSkeleton /> : data && (
-            <>
-              <div className="flex items-center gap-2 mb-6">
-                <div className="bg-[#64FFDA]/10 p-2 rounded-lg text-[#64FFDA]">
-                  <DollarSign size={20} />
-                </div>
-                <h3 className="text-xl font-bold text-white text-right">نطاقات الرواتب (ريال)</h3>
-                <div className="group relative mr-auto">
-                  <HelpCircle size={16} className="text-slate-600 cursor-help" />
-                  <div className="absolute bottom-full mb-2 left-0 w-40 bg-[#0A192F] text-[10px] p-2 rounded-lg border border-[#233554] opacity-0 group-hover:opacity-100 transition-opacity z-10 text-white">
-                    يوضح الحد الأدنى والأقصى للرواتب الشهرية المتوقعة لكل مسمى وظيفي.
-                  </div>
-                </div>
-              </div>
-              <SalariesChart data={data.salaries} />
-            </>
-          )}
-        </section>
-      </div>
-
-      <section className="bg-[#112240] p-8 md:p-12 rounded-[3.5rem] shadow-sm border border-[#233554] mb-12 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-2 h-full bg-[#64FFDA]"></div>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="bg-[#64FFDA]/10 p-3 rounded-2xl text-[#64FFDA]">
-              <Newspaper size={24} />
+              <h3 className="text-xl font-bold text-white">المهارات الأكثر طلباً</h3>
             </div>
-            <div className="text-right">
-              <h3 className="text-2xl font-bold text-white">رادار الأخبار المهنية (Live)</h3>
-              <p className="text-sm text-slate-400">بحث حي عبر Google Search لتقديم أحدث المعلومات</p>
+            <div className="group relative cursor-help">
+              <HelpCircle size={16} className="text-neutral-600" />
+              <div className="absolute bottom-full mb-3 left-0 w-48 bg-neutral-900 border border-neutral-800 p-3 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity z-20 text-[10px] text-neutral-400 font-bold pointer-events-none">
+                يمثل هذا الرسم البياني المهارات التي تظهر بشكل متكرر في إعلانات التوظيف النشطة حالياً.
+              </div>
             </div>
           </div>
-          <div className="flex gap-2">
-            {['التقنية', 'المالية', 'الرعاية الصحية', 'الهندسة'].map(cat => (
-              <button 
-                key={cat} 
-                onClick={() => fetchNews(cat)}
-                className="px-4 py-1.5 rounded-full bg-[#0A192F] text-xs font-bold text-slate-400 hover:bg-[#64FFDA] hover:text-[#0A192F] transition-colors"
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          <SkillsChart data={data?.skills || []} />
         </div>
 
-        {isNewsLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-4">
-             <div className="relative">
-                <RefreshCw size={40} className="animate-spin text-[#64FFDA]" />
-                <Sparkles size={16} className="absolute -top-1 -right-1 text-[#64FFDA] animate-pulse" />
+        <div className="md:col-span-4 bento-card p-10 bg-neutral-900/50">
+           <div className="flex flex-col items-center justify-center h-full text-center">
+             <div className="bg-[var(--accent)] bg-opacity-10 p-4 rounded-3xl mb-6">
+               <MapPin size={32} className="text-[var(--accent)]" />
              </div>
-             <p className="text-sm font-bold text-slate-500 italic text-right">Gemini يبحث في الويب عن أحدث المستجدات...</p>
-          </div>
-        ) : (
-          <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="bg-[#0A192F]/50 p-6 rounded-3xl text-sm leading-relaxed text-slate-300 whitespace-pre-wrap border border-[#233554] text-right">
-              {liveNews.text || 'اختر قطاعاً لاستعراض آخر الأخبار والمستجدات.'}
-            </div>
-            
-            {liveNews.sources && liveNews.sources.length > 0 && (
-              <div className="pt-6 border-t border-[#233554]">
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 text-right">المصادر المرجعية:</h4>
-                <div className="flex flex-wrap gap-4 justify-end">
-                   {liveNews.sources.map((source: any, i: number) => (
-                     <a key={i} href={source.web?.uri} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-[#0A192F] px-3 py-1.5 rounded-lg border border-[#233554] text-[10px] font-bold text-[#64FFDA] hover:border-[#64FFDA] transition-all">
-                       <ExternalLink size={12} />
-                       {source.web?.title || 'مصدر خارجي'}
-                     </a>
-                   ))}
+             <h3 className="text-xl font-bold mb-4">التوزيع الجغرافي</h3>
+             <GeoChart data={data?.distribution || []} />
+           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+        <div className="md:col-span-4 bento-card p-10">
+           <div className="flex items-center gap-3 mb-8 flex-row-reverse">
+              <div className="bg-emerald-500/10 p-2 rounded-xl text-emerald-400">
+                <TrendingUp size={20} />
+              </div>
+              <h3 className="text-lg font-bold">مجالات النمو</h3>
+           </div>
+           <GrowthChart data={data?.growth || []} />
+        </div>
+
+        <div className="md:col-span-8 bento-card p-10">
+           <div className="flex items-center justify-between mb-8 flex-row-reverse">
+             <div className="flex items-center gap-3">
+               <div className="bg-blue-500/10 p-2 rounded-xl text-blue-400">
+                 <DollarSign size={20} />
+               </div>
+               <h3 className="text-xl font-bold">توقعات الرواتب</h3>
+             </div>
+             <div className="group relative cursor-help">
+                <HelpCircle size={16} className="text-neutral-600" />
+                <div className="absolute bottom-full mb-3 left-0 w-48 bg-neutral-900 border border-neutral-800 p-3 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity z-20 text-[10px] text-neutral-400 font-bold pointer-events-none">
+                  نطاق الرواتب الشهرية المتوقع (بالريال السعودي) للمسميات الوظيفية الأكثر طلباً.
                 </div>
+              </div>
+           </div>
+           <SalariesChart data={data?.salaries || []} />
+        </div>
+      </div>
+
+      {/* Live News Bento Section */}
+      <div className="bento-card p-10 bg-[var(--accent)] text-[var(--accent-text)] relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-black/5 opacity-50"></div>
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row-reverse justify-between items-start md:items-center gap-8 mb-10">
+            <div className="text-right">
+              <div className="flex items-center gap-3 justify-end mb-2">
+                <Sparkles size={20} />
+                <h2 className="text-2xl font-black">أخبار السوق الذكية</h2>
+              </div>
+              <p className="font-bold opacity-60">تغطية حية لأحدث التوجهات عبر Gemini AI</p>
+            </div>
+            <div className="flex flex-wrap flex-row-reverse gap-2">
+              {['التقنية', 'المالية', 'الهندسة'].map(cat => (
+                <button 
+                  key={cat} 
+                  onClick={() => fetchNews(cat)}
+                  className="px-6 py-2 rounded-full bg-black/10 text-xs font-black hover:bg-black/20 transition-all border border-black/5"
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-black/10 p-8 rounded-[2rem] border border-black/5 min-h-[200px] flex items-center justify-center">
+            {isNewsLoading ? (
+              <div className="flex flex-col items-center gap-4">
+                 <RefreshCw size={32} className="animate-spin" />
+                 <p className="text-sm font-black italic">جاري البحث في المصادر العالمية...</p>
+              </div>
+            ) : (
+              <div className="text-right leading-relaxed font-bold text-lg whitespace-pre-wrap">
+                {liveNews.text || 'اختر قطاعاً لاستعراض آخر الأخبار والمستجدات المهنية.'}
               </div>
             )}
           </div>
-        )}
-      </section>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section className="bg-[#112240] p-6 md:p-8 rounded-3xl shadow-sm border border-[#233554]">
-          {loading && !data ? <ChartSkeleton /> : data && (
-            <>
-              <div className="flex items-center gap-2 mb-6">
-                <div className="bg-[#10B981]/10 p-2 rounded-lg text-[#10B981]">
-                  <TrendingUp size={20} />
-                </div>
-                <h3 className="text-xl font-bold text-white text-right">مجالات النمو المتسارع</h3>
-                <div className="group relative mr-auto">
-                  <HelpCircle size={16} className="text-slate-600 cursor-help" />
-                  <div className="absolute bottom-full mb-2 left-0 w-40 bg-[#0A192F] text-[10px] p-2 rounded-lg border border-[#233554] opacity-0 group-hover:opacity-100 transition-opacity z-10 text-white">
-                    يوضح النسبة المئوية للنمو السنوي المتوقع في التوظيف لهذا المجال.
-                  </div>
-                </div>
-              </div>
-              <GrowthChart data={data.growth} />
-            </>
-          )}
-        </section>
-
-        <section className="bg-[#112240] p-6 md:p-8 rounded-3xl shadow-sm border border-[#233554]">
-          {loading && !data ? <ChartSkeleton /> : data && (
-            <>
-              <div className="flex items-center gap-2 mb-6">
-                <div className="bg-slate-700/30 p-2 rounded-lg text-slate-300">
-                  <MapPin size={20} />
-                </div>
-                <h3 className="text-xl font-bold text-white text-right">التوزيع الجغرافي للفرص</h3>
-                <div className="group relative mr-auto">
-                  <HelpCircle size={16} className="text-slate-600 cursor-help" />
-                  <div className="absolute bottom-full mb-2 left-0 w-40 bg-[#0A192F] text-[10px] p-2 rounded-lg border border-[#233554] opacity-0 group-hover:opacity-100 transition-opacity z-10 text-white">
-                    تركيز الوظائف المتاحة في المدن الرئيسية بالمملكة.
-                  </div>
-                </div>
-              </div>
-              <GeoChart data={data.distribution} />
-            </>
-          )}
-        </section>
+        </div>
       </div>
     </div>
   );

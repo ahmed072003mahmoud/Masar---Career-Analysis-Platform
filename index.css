@@ -2,36 +2,129 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* High-end Void Navy Theme */
+  --bg-app: #050b14;
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-hover: rgba(255, 255, 255, 0.07);
+  --text-main: #94a3b8;
+  --text-heading: #f8fafc;
+  --accent: #2dd4bf; /* Electric Teal */
+  --accent-secondary: #7c3aed; /* Deep Violet */
+  --accent-warm: #fbbf24; /* Amber */
+  --border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 24px;
+}
+
 @layer base {
   body {
-    @apply text-[#CCD6F6] bg-[#0A192F] min-h-screen;
-    -webkit-tap-highlight-color: transparent;
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    @apply min-h-screen transition-all duration-700 ease-in-out antialiased overflow-x-hidden;
+    background-image: radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.05) 0%, transparent 100%);
   }
-
+  
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold text-white;
+    color: var(--text-heading);
+    @apply font-black tracking-tight;
   }
+}
 
-  /* Ensure standard links are also high contrast */
-  a {
-    @apply transition-colors;
-  }
+/* Aurora Floating Gradients */
+.aurora {
+  position: fixed;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: -1;
+  opacity: 0.15;
+  pointer-events: none;
+  animation: float-aurora 20s ease-in-out infinite;
+}
+
+.aurora-violet { top: -10%; left: -10%; background: var(--accent-secondary); }
+.aurora-teal { bottom: -10%; right: -10%; background: var(--accent); animation-delay: -5s; }
+.aurora-amber { top: 40%; right: 10%; background: var(--accent-warm); opacity: 0.08; animation-delay: -10s; }
+
+@keyframes float-aurora {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(10%, 10%) scale(1.1); }
+  66% { transform: translate(-5%, 15%) scale(0.9); }
+}
+
+/* Grainy Texture Overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  z-index: 1000;
+  pointer-events: none;
 }
 
 @layer components {
   .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto px-6 sm:px-8 lg:px-12;
   }
   
-  .card-standard {
-    @apply bg-[#112240] rounded-[2rem] border border-[#233554] shadow-vivid;
+  .bento-card, .glass-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    @apply rounded-[2rem] transition-all duration-500 ease-out shadow-2xl;
+    position: relative;
+  }
+
+  /* Holographic Shine */
+  .bento-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(125deg, rgba(255,255,255,0.1) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.05) 100%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  .bento-card:hover::after {
+    opacity: 1;
+  }
+
+  .bento-card-hover:hover {
+    background: var(--bg-card-hover);
+    @apply -translate-y-1 scale-[1.01];
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 40px rgba(45, 212, 191, 0.1);
+  }
+  
+  .glass-panel {
+    background: rgba(5, 11, 20, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+  }
+
+  .gradient-text {
+    background: linear-gradient(to left, var(--accent), #ffffff, var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% auto;
+    animation: text-gradient 8s linear infinite;
+  }
+
+  @keyframes text-gradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
   }
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Holographic Compass Glow */
+.compass-glow {
+  filter: drop-shadow(0 0 15px rgba(45, 212, 191, 0.4)) drop-shadow(0 0 30px rgba(124, 58, 237, 0.2));
 }

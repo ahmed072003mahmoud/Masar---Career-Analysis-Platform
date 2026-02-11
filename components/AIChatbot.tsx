@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { chatWithAI } from '../services/geminiService';
@@ -8,7 +7,7 @@ const AIChatbot: React.FC = () => {
   const { dispatch } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{role: 'user' | 'ai', text: string}[]>([
-    { role: 'ai', text: 'مرحباً بك في مسار! أنا مستشارك المهني الذكي، كيف يمكنني مساعدتك اليوم؟' }
+    { role: 'ai', text: 'أهلاً بك! أنا "مُرشد"، دليلك المهني الذكي في منصة مسار. كيف أستطيع توجيهك اليوم؟' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -33,90 +32,96 @@ const AIChatbot: React.FC = () => {
       const response = await chatWithAI(userMsg, messages);
       setMessages(prev => [...prev, { role: 'ai', text: response }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'ai', text: 'عذراً، حدث خطأ فني.' }]);
+      setMessages(prev => [...prev, { role: 'ai', text: 'عذراً، واجهت مشكلة في التفكير. هل يمكنك المحاولة مرة أخرى؟' }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed bottom-6 left-6 z-[100] font-sans">
+    <div className="fixed bottom-8 left-8 z-[200] font-sans">
       {isOpen ? (
-        <div className="bg-[#112240] w-[350px] md:w-[400px] h-[550px] rounded-[2.5rem] shadow-vivid border border-[#233554] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 duration-300 ring-1 ring-[#64FFDA]/10">
-          <div className="bg-[#0A192F] p-6 flex flex-row-reverse justify-between items-center text-white border-b border-[#233554]">
-            <div className="flex flex-row-reverse items-center gap-3">
-              <div className="bg-[#64FFDA]/10 p-2 rounded-xl text-[#64FFDA] border border-[#64FFDA]/20">
-                <Bot size={20} />
+        <div className="bg-[var(--bg-card)] w-[350px] md:w-[420px] h-[600px] rounded-[3rem] shadow-2xl border border-[var(--border)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-12 duration-500 backdrop-blur-xl ring-1 ring-white/10">
+          {/* Header */}
+          <div className="bg-black bg-opacity-20 p-8 flex flex-row-reverse justify-between items-center border-b border-[var(--border)]">
+            <div className="flex flex-row-reverse items-center gap-4">
+              <div className="bg-[var(--accent)] p-3 rounded-2xl text-[var(--accent-text)] shadow-lg animate-pulse">
+                <Bot size={24} />
               </div>
               <div className="text-right">
-                <h3 className="font-bold text-sm">مستشار مسار الذكي</h3>
-                <p className="text-[10px] text-slate-500 flex flex-row-reverse items-center gap-1">
-                  مدعوم بـ Gemini 3 Pro
-                  <Sparkles size={10} className="text-[#64FFDA]" />
+                <h3 className="font-black text-lg text-heading">مُرشد مسار</h3>
+                <p className="text-[10px] text-[var(--accent)] font-black uppercase tracking-widest flex flex-row-reverse items-center gap-2">
+                  <Sparkles size={12} />
+                  AI Intelligence
                 </p>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:bg-white/5 p-1.5 rounded-full text-slate-500 transition-colors">
-              <X size={20} />
+            <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-2 rounded-2xl text-main transition-all">
+              <X size={24} />
             </button>
           </div>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#0A192F]/80 no-scrollbar">
+          {/* Messages */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-6 no-scrollbar">
             {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} items-start gap-3`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${
-                  msg.role === 'user' ? 'bg-[#233554] border-[#112240]' : 'bg-[#64FFDA]/10 border-[#64FFDA]/20'
+              <div key={i} className={`flex ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} items-start gap-4 animate-in fade-in duration-300`}>
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border ${
+                  msg.role === 'user' ? 'bg-white/10 border-white/10' : 'bg-[var(--accent)] bg-opacity-10 border-[var(--border)]'
                 }`}>
-                  {msg.role === 'user' ? <User size={14} className="text-slate-300" /> : <Bot size={14} className="text-[#64FFDA]" />}
+                  {msg.role === 'user' ? <User size={18} className="text-heading" /> : <Bot size={18} className="text-[var(--accent)]" />}
                 </div>
-                <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed text-right ${
+                <div className={`max-w-[85%] p-5 rounded-[1.8rem] text-sm leading-relaxed text-right shadow-sm ${
                   msg.role === 'user' 
-                    ? 'bg-[#64FFDA] text-[#0A192F] rounded-tr-none font-bold' 
-                    : 'bg-[#112240] border border-[#233554] text-slate-100 rounded-tl-none'
+                    ? 'bg-[var(--accent)] text-[var(--accent-text)] rounded-tr-none font-bold' 
+                    : 'bg-black bg-opacity-20 border border-[var(--border)] text-heading rounded-tl-none'
                 }`}>
                   {msg.text}
                 </div>
               </div>
             ))}
             {isLoading && (
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#64FFDA]/10 border border-[#64FFDA]/20 flex items-center justify-center shrink-0">
-                  <Bot size={14} className="text-[#64FFDA]" />
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-[var(--accent)] bg-opacity-10 border border-[var(--border)] flex items-center justify-center">
+                  <Bot size={18} className="text-[var(--accent)]" />
                 </div>
-                <div className="bg-[#112240] border border-[#233554] p-4 rounded-2xl rounded-tl-none flex items-center gap-2">
-                  <Loader2 size={14} className="animate-spin text-[#64FFDA]" />
-                  <span className="text-xs text-[#64FFDA] font-medium italic">جاري التفكير...</span>
+                <div className="bg-black bg-opacity-20 border border-[var(--border)] p-5 rounded-3xl rounded-tl-none flex items-center gap-3">
+                  <Loader2 size={16} className="animate-spin text-[var(--accent)]" />
+                  <span className="text-xs text-[var(--accent)] font-black italic">جاري التفكير...</span>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="p-4 bg-[#112240] border-t border-[#233554] flex flex-row-reverse gap-2">
+          {/* Input */}
+          <div className="p-6 bg-black bg-opacity-10 border-t border-[var(--border)] flex flex-row-reverse gap-3">
             <input 
               type="text" 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="اسأل عن مسارك المهني..."
-              className="flex-1 bg-[#0A192F] border border-[#233554] rounded-2xl px-5 py-3 text-sm outline-none focus:border-[#64FFDA] text-white text-right transition-all"
+              placeholder="اكتب استفسارك هنا..."
+              className="flex-1 bg-black bg-opacity-20 border border-[var(--border)] rounded-2xl px-6 py-4 text-sm outline-none focus:border-[var(--accent)] text-heading text-right transition-all"
             />
             <button 
               onClick={handleSend}
               disabled={isLoading || !input.trim()}
-              className="bg-[#64FFDA] text-[#0A192F] p-3 rounded-2xl hover:opacity-90 disabled:opacity-30 transition-all shadow-lg shadow-[#64FFDA]/10"
+              className="bg-[var(--accent)] text-[var(--accent-text)] p-4 rounded-2xl hover:scale-105 active:scale-95 disabled:opacity-30 transition-all shadow-xl shadow-[var(--accent)]/20"
             >
-              <Send size={18} />
+              <Send size={20} />
             </button>
           </div>
         </div>
       ) : (
         <button 
           onClick={() => setIsOpen(true)}
-          className="bg-[#64FFDA] text-[#0A192F] px-6 py-4 rounded-full shadow-vivid hover:scale-105 transition-all flex flex-row-reverse items-center gap-4 font-black border border-[#64FFDA]/20 ring-4 ring-[#64FFDA]/5"
+          className="bg-[var(--accent)] text-[var(--accent-text)] px-8 py-5 rounded-full shadow-2xl hover:scale-110 active:scale-90 transition-all flex flex-row-reverse items-center gap-4 font-black border border-[var(--accent)] border-opacity-30 group relative"
         >
-          <span>استشر الذكاء الاصطناعي</span>
-          <div className="bg-[#0A192F] text-[#64FFDA] p-2 rounded-full shadow-inner">
-            <MessageSquare size={22} />
+          {/* Pulsing Glow Effect */}
+          <div className="absolute inset-0 bg-[var(--accent)] rounded-full blur-xl opacity-20 animate-pulse-slow"></div>
+          
+          <span className="relative z-10">استشر مُرشد</span>
+          <div className="relative z-10 bg-black bg-opacity-10 p-2.5 rounded-full">
+            <MessageSquare size={24} className="group-hover:rotate-12 transition-transform" />
           </div>
         </button>
       )}

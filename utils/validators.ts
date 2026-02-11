@@ -1,4 +1,3 @@
-
 import { UserAssessment } from '../types';
 
 export const validateEmail = (email: string): boolean => {
@@ -21,6 +20,12 @@ export const isProfileComplete = (profile: UserAssessment): { isValid: boolean; 
 };
 
 export const isAssessmentComplete = (answers: Record<string, string>): boolean => {
-  // Simple check: if they answered the last question or have at least 10 answers
-  return !!answers['final_5'] || Object.keys(answers).length >= 10;
+  /**
+   * We consider the assessment complete if the final question is answered 
+   * OR if there are at least 8 answers (allowing some dynamic path variations).
+   */
+  const answerCount = Object.keys(answers).length;
+  const hasFinalAnswer = !!answers['final_5'];
+  
+  return hasFinalAnswer || answerCount >= 8;
 };
