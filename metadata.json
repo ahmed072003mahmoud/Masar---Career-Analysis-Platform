@@ -1,0 +1,8 @@
+{
+  "name": "Masar - Career Analysis Platform",
+  "description": "A comprehensive platform for career path analysis and professional recommendations using Gemini AI and market simulation.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
