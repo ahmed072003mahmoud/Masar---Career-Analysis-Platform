@@ -51,15 +51,16 @@ const formatRelativeTime = (timestamp: number) => {
   return `منذ ${days} يوم`;
 };
 
-const Timeline: React.FC<TimelineProps> = ({ events }) => {
+const Timeline: React.FC<TimelineProps> = ({ events = [] }) => {
   const [filter, setFilter] = useState<'all' | TimelineEvent['type']>('all');
 
   const filteredEvents = useMemo(() => {
-    if (filter === 'all') return events;
-    return events.filter(e => e.type === filter);
+    const evs = events || [];
+    if (filter === 'all') return evs;
+    return evs.filter(e => e.type === filter);
   }, [events, filter]);
 
-  if (events.length === 0) {
+  if ((events || []).length === 0) {
     return (
       <div className="text-center py-20 bg-gray-50 rounded-[2.5rem] border border-gray-100 text-gray-400">
         لا توجد أحداث مسجلة في خطك الزمني حتى الآن.

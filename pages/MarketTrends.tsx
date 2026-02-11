@@ -185,7 +185,7 @@ const MarketTrends: React.FC = () => {
         </div>
       </div>
 
-      {/* Live News Bento Section */}
+      {/* Live News Bento Section with Search Grounding Display */}
       <div className="bento-card p-10 bg-[var(--accent)] text-[var(--accent-text)] relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-black/5 opacity-50"></div>
         <div className="relative z-10">
@@ -217,8 +217,34 @@ const MarketTrends: React.FC = () => {
                  <p className="text-sm font-black italic">جاري البحث في المصادر العالمية...</p>
               </div>
             ) : (
-              <div className="text-right leading-relaxed font-bold text-lg whitespace-pre-wrap">
-                {liveNews.text || 'اختر قطاعاً لاستعراض آخر الأخبار والمستجدات المهنية.'}
+              <div className="w-full space-y-8">
+                <div className="text-right leading-relaxed font-bold text-lg whitespace-pre-wrap">
+                  {liveNews.text || 'اختر قطاعاً لاستعراض آخر الأخبار والمستجدات المهنية.'}
+                </div>
+                
+                {/* Mandatory display of grounding source URLs */}
+                {liveNews.sources && liveNews.sources.length > 0 && (
+                  <div className="border-t border-black/10 pt-6 mt-6">
+                    <h4 className="text-[10px] font-black mb-4 flex items-center justify-end gap-2 opacity-60 uppercase tracking-widest">
+                      المصادر والمراجع الموثوقة
+                      <ExternalLink size={14} />
+                    </h4>
+                    <div className="flex flex-wrap flex-row-reverse gap-2">
+                      {liveNews.sources.map((chunk, idx) => chunk.web && (
+                        <a 
+                          key={idx} 
+                          href={chunk.web.uri} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-black/5 hover:bg-black/10 rounded-xl text-[10px] font-bold flex items-center gap-2 transition-all border border-black/10 group"
+                        >
+                          <span className="max-w-[150px] truncate">{chunk.web.title || 'رابط المصدر'}</span>
+                          <ExternalLink size={12} className="opacity-40 group-hover:opacity-100" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

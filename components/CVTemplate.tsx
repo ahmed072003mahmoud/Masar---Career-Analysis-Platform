@@ -8,7 +8,7 @@ interface CVTemplateProps {
   badges: string[];
 }
 
-const CVTemplate: React.FC<CVTemplateProps> = ({ profile, badges }) => {
+const CVTemplate: React.FC<CVTemplateProps> = ({ profile, badges = [] }) => {
   return (
     <div id="cv-template" className="w-[210mm] min-h-[297mm] bg-white p-[20mm] text-gray-900 font-sans shadow-2xl mx-auto border border-gray-100">
       {/* Header */}
@@ -28,17 +28,17 @@ const CVTemplate: React.FC<CVTemplateProps> = ({ profile, badges }) => {
         <div className="col-span-2 space-y-10">
           {/* Summary */}
           <section>
-            <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3">الملخص المهني</h2>
-            <p className="text-gray-600 leading-relaxed text-sm">{profile.summary}</p>
+            <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3 text-right">الملخص المهني</h2>
+            <p className="text-gray-600 leading-relaxed text-sm text-right">{profile.summary}</p>
           </section>
 
           {/* Projects */}
-          {profile.projects.length > 0 && (
+          {(profile.projects || []).length > 0 && (
             <section>
-              <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3">المشاريع البارزة</h2>
+              <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3 text-right">المشاريع البارزة</h2>
               <div className="space-y-4">
                 {profile.projects.map(project => (
-                  <div key={project.id} className="bg-gray-50 p-4 rounded-xl">
+                  <div key={project.id} className="bg-gray-50 p-4 rounded-xl text-right">
                     <h3 className="font-bold text-brand-dark mb-1">{project.title}</h3>
                     <p className="text-sm text-gray-600">{project.description}</p>
                   </div>
@@ -49,8 +49,8 @@ const CVTemplate: React.FC<CVTemplateProps> = ({ profile, badges }) => {
 
           {/* Education */}
           <section>
-            <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3">التعليم</h2>
-            <div className="p-4 border border-gray-100 rounded-xl">
+            <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3 text-right">التعليم</h2>
+            <div className="p-4 border border-gray-100 rounded-xl text-right">
               <p className="font-bold text-gray-800">{profile.education || 'لم يتم تحديد التعليم بعد'}</p>
             </div>
           </section>
@@ -60,9 +60,9 @@ const CVTemplate: React.FC<CVTemplateProps> = ({ profile, badges }) => {
         <div className="col-span-1 space-y-10">
           {/* Skills */}
           <section>
-            <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3">المهارات</h2>
+            <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3 text-right">المهارات</h2>
             <div className="space-y-3">
-              {profile.skills.map(skill => (
+              {(profile.skills || []).map(skill => (
                 <div key={skill} className="w-full">
                   <div className="flex justify-between mb-1">
                     <span className="text-xs font-bold text-gray-700">{skill}</span>
@@ -77,9 +77,9 @@ const CVTemplate: React.FC<CVTemplateProps> = ({ profile, badges }) => {
 
           {/* Badges */}
           <section>
-            <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3">الأوسمة الرقمية</h2>
-            <div className="flex flex-wrap gap-4">
-              {badges.map(badge => (
+            <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3 text-right">الأوسمة الرقمية</h2>
+            <div className="flex flex-wrap gap-4 justify-end">
+              {(badges || []).map(badge => (
                 <div key={badge} className="bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
                   <GeometricBadge type={badge} size={32} />
                 </div>
@@ -88,14 +88,18 @@ const CVTemplate: React.FC<CVTemplateProps> = ({ profile, badges }) => {
           </section>
 
           {/* Courses */}
-          {profile.courses.length > 0 && (
+          {(profile.courses || []).length > 0 && (
             <section>
-              <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3">الدورات التدريبية</h2>
-              <div className="space-y-3">
+              <h2 className="text-lg font-bold text-brand-dark mb-4 border-r-4 border-brand-light pr-3 text-right">الدورات التدريبية</h2>
+              <div className="space-y-4">
                 {profile.courses.map(course => (
-                  <div key={course.id} className="text-sm">
+                  <div key={course.id} className="text-sm text-right bg-gray-50/50 p-3 rounded-lg border border-gray-100">
                     <p className="font-bold text-gray-800">{course.name}</p>
-                    <p className="text-xs text-gray-500">{course.provider} - {course.date}</p>
+                    <p className="text-[10px] text-brand-light font-black uppercase tracking-widest mt-1">{course.provider}</p>
+                    <div className="flex flex-col mt-2 text-[9px] text-gray-500 font-bold gap-1">
+                      <span>{course.date}</span>
+                      {course.duration && <span>مدة الدورة: {course.duration}</span>}
+                    </div>
                   </div>
                 ))}
               </div>

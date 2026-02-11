@@ -1,12 +1,13 @@
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import { UserAssessment, TimelineEvent } from '../types';
-import { checkBadgeEligibility } from '../utils/pointsCalculator';
+import { checkBadgeEligibility, calculateLevel } from '../utils/pointsCalculator';
 
 interface Toast {
   id: string;
   message: string;
   type: 'success' | 'info';
+  isRemoving?: boolean;
 }
 
 interface User {
@@ -14,11 +15,15 @@ interface User {
   token: string;
 }
 
-type ThemeType = 'dark' | 'light' | 'glass' | 'bento';
+interface LearningStep {
+  title: string;
+  description: string;
+  resourceHint: string;
+}
 
 interface AppState {
   user: User | null;
-  theme: ThemeType;
+  theme: 'dark' | 'light';
   answers: Record<string, string>;
   profile: UserAssessment;
   savedReport: any | null;
@@ -28,35 +33,28 @@ interface AppState {
   points: number;
   events: TimelineEvent[];
   marketVisits: number;
-  marketVisitsDaily: Record<string, boolean>;
-  personalizedLearningPath: string[];
+  personalizedLearningPath: LearningStep[];
   toasts: Toast[];
-  notes: Record<string, string>;
   aiInteractions: number;
 }
 
 type Action = 
   | { type: 'LOGIN'; user: User }
   | { type: 'LOGOUT' }
-  | { type: 'SET_THEME'; theme: ThemeType }
   | { type: 'SET_ANSWER'; questionId: string; value: string }
   | { type: 'UPDATE_PROFILE'; profile: Partial<UserAssessment> }
   | { type: 'SAVE_REPORT'; report: any }
   | { type: 'SET_AI_INSIGHTS'; insights: string }
   | { type: 'SET_AI_SUMMARY'; summary: string }
-  | { type: 'ADD_PROJECT'; project: any }
-  | { type: 'REMOVE_PROJECT'; id: string }
-  | { type: 'ADD_COURSE'; course: any }
-  | { type: 'REMOVE_COURSE'; id: string }
   | { type: 'ADD_BADGE'; badge: string }
   | { type: 'ADD_POINTS'; amount: number }
   | { type: 'INCREMENT_MARKET_VISITS' }
   | { type: 'INCREMENT_AI_INTERACTION' }
   | { type: 'LOG_EVENT'; event: Omit<TimelineEvent, 'id' | 'timestamp'> }
-  | { type: 'SET_LEARNING_PATH'; path: string[] }
+  | { type: 'SET_LEARNING_PATH'; path: LearningStep[] }
   | { type: 'ADD_TOAST'; message: string; toastType?: 'success' | 'info' }
   | { type: 'REMOVE_TOAST'; id: string }
-  | { type: 'SET_NOTE'; careerId: string; note: string }
+  | { type: 'START_REMOVE_TOAST'; id: string }
   | { type: 'RESET_STATE' };
 
 const initialState: AppState = {
@@ -66,12 +64,11 @@ const initialState: AppState = {
   profile: {
     fullName: 'زائر مسار',
     email: '',
-    summary: 'متحمس لتطوير مساري المهني باستخدام أحدث التقنيات.',
+    summary: 'متحمس لتطوير مساري المهني.',
     education: '',
     skills: [],
     interests: [],
     experienceLevel: 'junior',
-    currentRole: '',
     projects: [],
     courses: []
   },
@@ -83,15 +80,13 @@ const initialState: AppState = {
   events: [{
     id: 'init',
     type: 'level',
-    title: 'بداية الرحلة',
-    description: 'انضممت إلى منصة مسار وبدأت التخطيط لمستقبلك المهني.',
+    title: 'نقطة الانطلاق',
+    description: 'بدأت رحلتك الاستكشافية في مسار.',
     timestamp: Date.now()
   }],
   marketVisits: 0,
-  marketVisitsDaily: {},
   personalizedLearningPath: [],
   toasts: [],
-  notes: {},
   aiInteractions: 0
 };
 
@@ -100,81 +95,74 @@ const UserContext = createContext<{
   dispatch: React.Dispatch<Action>;
 } | undefined>(undefined);
 
+// Renamed to generatePersonalizedLearningPath to match the import in Recommendations.tsx
+export const generatePersonalizedLearningPath = (state: AppState): LearningStep[] => {
+  const { profile, savedReport, level } = { ...state, level: calculateLevel(state.points) };
+  const steps: LearningStep[] = [];
+
+  if (savedReport?.primary) {
+    steps.push({
+      title: `إتقان أساسيات ${savedReport.primary.title}`,
+      description: "تحليل متعمق للمتطلبات التقنية لهذا المسار.",
+      resourceHint: "ابحث عن دورات متخصصة في منصة Coursera"
+    });
+  }
+
+  if (profile.skills.length < 3) {
+    steps.push({
+      title: "توسيع ترسانة المهارات",
+      description: "تحتاج لإضافة 3 مهارات تقنية لرفع فرصك الوظيفية.",
+      resourceHint: "استخدم قسم 'مُرشد' لطلب قائمة مهارات"
+    });
+  }
+
+  if (level < 3) {
+    steps.push({
+      title: "بناء الهوية المهنية",
+      description: "أكمل تقييمك المهني لتحصل على تحليل Gemini العميق.",
+      resourceHint: "انتقل إلى صفحة التقييم"
+    });
+  }
+
+  return steps;
+};
+
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case 'LOGIN':
-      return { ...state, user: action.user };
-    case 'LOGOUT':
-      return { ...state, user: null };
-    case 'SET_THEME':
-      return { ...state, theme: action.theme };
-    case 'SET_ANSWER':
-      return { ...state, answers: { ...state.answers, [action.questionId]: action.value } };
-    case 'UPDATE_PROFILE':
-      return { ...state, profile: { ...state.profile, ...action.profile } };
-    case 'SAVE_REPORT':
-      return { ...state, savedReport: action.report };
-    case 'SET_AI_INSIGHTS':
-      return { ...state, aiInsights: action.insights };
-    case 'SET_AI_SUMMARY':
-      return { ...state, aiSummary: action.summary };
-    case 'ADD_PROJECT':
-      return { ...state, profile: { ...state.profile, projects: [...state.profile.projects, action.project] } };
-    case 'REMOVE_PROJECT':
-      return { ...state, profile: { ...state.profile, projects: state.profile.projects.filter(p => p.id !== action.id) } };
-    case 'ADD_COURSE':
-      return { ...state, profile: { ...state.profile, courses: [...state.profile.courses, action.course] } };
-    case 'REMOVE_COURSE':
-      return { ...state, profile: { ...state.profile, courses: state.profile.courses.filter(c => c.id !== action.id) } };
-    case 'ADD_BADGE':
+    case 'LOGIN': return { ...state, user: action.user };
+    case 'LOGOUT': return { ...state, user: null };
+    case 'SET_ANSWER': return { ...state, answers: { ...state.answers, [action.questionId]: action.value } };
+    case 'UPDATE_PROFILE': return { ...state, profile: { ...state.profile, ...action.profile } };
+    case 'SAVE_REPORT': return { ...state, savedReport: action.report };
+    case 'SET_AI_INSIGHTS': return { ...state, aiInsights: action.insights };
+    case 'SET_AI_SUMMARY': return { ...state, aiSummary: action.summary };
+    case 'ADD_BADGE': 
       if (state.badges.includes(action.badge)) return state;
       return { ...state, badges: [...state.badges, action.badge] };
-    case 'ADD_POINTS':
-      return { ...state, points: state.points + action.amount };
-    case 'INCREMENT_MARKET_VISITS':
-      return { ...state, marketVisits: state.marketVisits + 1 };
-    case 'INCREMENT_AI_INTERACTION':
-      return { ...state, aiInteractions: state.aiInteractions + 1 };
+    case 'ADD_POINTS': return { ...state, points: state.points + action.amount };
+    case 'INCREMENT_MARKET_VISITS': return { ...state, marketVisits: (state.marketVisits || 0) + 1 };
+    case 'INCREMENT_AI_INTERACTION': return { ...state, aiInteractions: (state.aiInteractions || 0) + 1 };
     case 'LOG_EVENT':
-      const newEvent: TimelineEvent = { ...action.event, id: Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
-      return { ...state, events: [newEvent, ...state.events].slice(0, 50) };
-    case 'SET_LEARNING_PATH':
-      return { ...state, personalizedLearningPath: action.path };
+      return { ...state, events: [{ ...action.event, id: Math.random().toString(), timestamp: Date.now() }, ...state.events] };
+    case 'SET_LEARNING_PATH': return { ...state, personalizedLearningPath: action.path };
     case 'ADD_TOAST':
-      return { ...state, toasts: [...state.toasts, { id: Math.random().toString(36).substr(2, 9), message: action.message, type: action.toastType || 'success' }] };
-    case 'REMOVE_TOAST':
-      return { ...state, toasts: state.toasts.filter(t => t.id !== action.id) };
-    case 'SET_NOTE':
-      return { ...state, notes: { ...state.notes, [action.careerId]: action.note } };
-    case 'RESET_STATE':
-      return initialState;
-    default:
-      return state;
+      return { ...state, toasts: [...state.toasts, { id: Math.random().toString(), message: action.message, type: action.toastType || 'success' }] };
+    case 'REMOVE_TOAST': return { ...state, toasts: state.toasts.filter(t => t.id !== action.id) };
+    case 'RESET_STATE': return initialState;
+    default: return state;
   }
 }
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(reducer, initialState, (initial) => {
-    const saved = localStorage.getItem('masar_app_state');
-    return saved ? JSON.parse(saved) : initial;
-  });
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    localStorage.setItem('masar_app_state', JSON.stringify(state));
-    const eligible = checkBadgeEligibility(state);
-    eligible.forEach(badgeId => {
-      if (!state.badges.includes(badgeId)) {
-        dispatch({ type: 'ADD_BADGE', badge: badgeId });
-        dispatch({ type: 'ADD_TOAST', message: `مبروك! حصلت على وسام جديد` });
-      }
-    });
-  }, [state]);
+    // Updated to use the renamed function generatePersonalizedLearningPath
+    const path = generatePersonalizedLearningPath(state);
+    dispatch({ type: 'SET_LEARNING_PATH', path });
+  }, [state.points, state.profile.skills.length]);
 
-  return (
-    <UserContext.Provider value={{ state, dispatch }}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={{ state, dispatch }}>{children}</UserContext.Provider>;
 };
 
 export const useUser = () => {

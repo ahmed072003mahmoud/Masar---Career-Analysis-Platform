@@ -11,6 +11,8 @@ export interface Course {
   name: string;
   provider: string;
   date: string;
+  duration?: string;
+  link?: string;
 }
 
 export interface TimelineEvent {

@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import { UserProvider, useUser } from './context/UserContext';
+import ToastContainer from './components/ui/ToastContainer';
 
 // Lazy loading components
 const Home = lazy(() => import('./pages/Home'));
@@ -32,6 +33,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const AppContent: React.FC = () => {
   return (
     <Layout>
+      <ToastContainer />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="/" element={<Home />} />

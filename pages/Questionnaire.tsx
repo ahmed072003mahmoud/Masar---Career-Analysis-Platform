@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { questions } from '../data/questions';
@@ -211,6 +212,23 @@ const Questionnaire: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Back Modal Confirmation */}
+      {showBackModal && (
+        <div className="fixed inset-0 z-[200] bg-black bg-opacity-80 backdrop-blur-xl flex items-center justify-center p-8 animate-in fade-in duration-300">
+          <div className="glass-card p-12 max-w-lg w-full text-center border-amber-500/20">
+            <div className="w-20 h-20 bg-amber-500 bg-opacity-10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-8">
+              <AlertTriangle size={40} />
+            </div>
+            <h2 className="text-3xl font-black text-white mb-4">هل ترغب في العودة؟</h2>
+            <p className="text-slate-400 font-bold mb-10 leading-relaxed">ستفقد إجابتك الحالية على هذا السؤال، ولكن سيتم حفظ تقدمك السابق.</p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button onClick={handleBack} className="flex-1 bg-amber-500 text-black">نعم، أرغب في العودة</Button>
+              <Button variant="ghost" onClick={() => setShowBackModal(false)} className="flex-1 text-white border border-white/10">إلغاء</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

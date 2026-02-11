@@ -1,3 +1,4 @@
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -8,29 +9,24 @@ export default {
     extend: {
       colors: {
         brand: {
-          dark: '#020C1B',
-          royal: '#2563EB',
-          vibrant: '#F97316',
-          purple: '#A855F7',
-          accent: '#64FFDA',
+          dark: '#020617',
+          royal: '#6366f1',
+          vibrant: '#a3e635',
+          indigo: '#4f46e5',
+          slate: '#1e293b',
         }
       },
       fontFamily: {
         sans: ['Alexandria', 'Inter', 'sans-serif'],
       },
       animation: {
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'float': 'float 6s ease-in-out infinite',
-        'glow': 'glow 2s ease-in-out infinite alternate',
+        'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'fade-in': 'fadeIn 0.5s ease-out forwards',
       },
       keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-15px)' },
-        },
-        glow: {
-          'from': { boxShadow: '0 0 10px -2px var(--accent)' },
-          'to': { boxShadow: '0 0 25px 2px var(--accent)' },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         }
       }
     },

@@ -1,4 +1,12 @@
+
 import { UserAssessment } from '../types';
+
+/**
+ * Sanitizes input string by removing common HTML tags to prevent basic XSS.
+ */
+const sanitize = (val: string): string => {
+  return val.replace(/<[^>]*>?/gm, '').trim();
+};
 
 export const validateEmail = (email: string): boolean => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -6,13 +14,21 @@ export const validateEmail = (email: string): boolean => {
 };
 
 export const validateFullName = (name: string): boolean => {
-  return name.length >= 3 && !/\d/.test(name);
+  const sanitized = sanitize(name);
+  // Allow Arabic and Latin characters, spaces, dots
+  const re = /^[a-zA-Z\s\u0600-\u06FF.]+$/;
+  return sanitized.length >= 3 && sanitized.length <= 50 && re.test(sanitized);
+};
+
+export const isNotEmpty = (val: string): boolean => {
+  return sanitize(val).length > 0;
 };
 
 export const isProfileComplete = (profile: UserAssessment): { isValid: boolean; missingFields: string[] } => {
   const missingFields: string[] = [];
-  if (!profile.fullName || profile.fullName === 'زائر مسار') missingFields.push('الاسم الكامل');
-  if (!profile.email || !validateEmail(profile.email)) missingFields.push('البريد الإلكتروني');
+  if (!validateFullName(profile.fullName)) missingFields.push('الاسم الكامل (3 أحرف على الأقل، أحرف فقط)');
+  if (!validateEmail(profile.email)) missingFields.push('البريد الإلكتروني (صيغة غير صحيحة)');
+  if (!isNotEmpty(profile.education)) missingFields.push('المؤهل التعليمي');
   return {
     isValid: missingFields.length === 0,
     missingFields
@@ -20,12 +36,6 @@ export const isProfileComplete = (profile: UserAssessment): { isValid: boolean; 
 };
 
 export const isAssessmentComplete = (answers: Record<string, string>): boolean => {
-  /**
-   * We consider the assessment complete if the final question is answered 
-   * OR if there are at least 8 answers (allowing some dynamic path variations).
-   */
-  const answerCount = Object.keys(answers).length;
   const hasFinalAnswer = !!answers['final_5'];
-  
-  return hasFinalAnswer || answerCount >= 8;
+  return hasFinalAnswer;
 };
